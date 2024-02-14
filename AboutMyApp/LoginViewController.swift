@@ -13,31 +13,43 @@ enum AlertType {
     case wrongLoginOrPass
 }
 
-struct User {
-    let login: String
-    let password: String
-}
-
 final class LoginViewController: UIViewController {
     
     @IBOutlet private var loginTextField: UITextField!
     @IBOutlet private var passwordTextField: UITextField!
     @IBOutlet private var loginButton: UIButton!
     
-    private let currentUser = User(login: "user", password: "12345")
+    private let currentUser = User.getUser()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         loginButton.layer.cornerRadius = 10
+        
+        loginTextField.text = currentUser.login
+        passwordTextField.text = currentUser.password
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        let welcomeVC = segue.destination as? WelcomeViewController
-        welcomeVC?.currentUser = currentUser
+        let tabBarVC = segue.destination as? UITabBarController
+        
+        for vc in tabBarVC?.viewControllers ?? [] {
+            if let vc = vc as? WelcomeViewController {
+                vc.currentUser = currentUser
+            }
+            
+            if let nav = vc as? UINavigationController {
+                print(nav.viewControllers.count)
+                if let personVC = nav.topViewController as? PersonViewController {
+                    personVC.currentUser = currentUser
+                }
+            }
+        }
     }
     
-    override func shouldPerformSegue(withIdentifier identifier: String,
-                                     sender: Any?) -> Bool {
+    override func shouldPerformSegue(
+        withIdentifier identifier: String,
+        sender: Any?
+    ) -> Bool {
         if loginTextField.text == currentUser.login,
            passwordTextField.text == currentUser.password {
             return true
